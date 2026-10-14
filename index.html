@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Campus Buddy — AI College & Tech Assistant</title>
+  
+  <!-- ===================================================================
+       1. CSS STYLING (Modern, Responsive, Beginner-Friendly)
+       =================================================================== -->
+  <style>
+    /* CSS RESET & BASE STYLES */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 50%, #ede9fe 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 12px;
+      color: #1e293b;
+    }
+
+    /* MAIN CHAT CONTAINER (Responsive Card) */
+    .chat-card {
+      width: 100%;
+      max-width: 520px;
+      height: 92vh;
+      max-height: 720px;
+      background: #ffffff;
+      border-radius: 24px;
+      box-shadow: 0 15px 35px rgba(79, 70, 229, 0.18), 0 5px 15px rgba(0, 0, 0, 0.06);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
+      position: relative;
+    }
+
+    /* CHAT HEADER */
+    .chat-header {
+      background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+      color: #ffffff;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(79, 70, 229, 0.2);
+      z-index: 10;
+    }
+
+    .header-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .bot-avatar {
+      width: 44px;
+      height: 44px;
+      background: #ffffff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+      flex-shrink: 0;
+    }
+
+    .header-text h1 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    .header-status {
+      font-size: 0.78rem;
+      color: #e0e7ff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 2px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: #22c55e;
+      border-radius: 50%;
+      display: inline-block;
+      box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.3);
+    }
+
+    .clear-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: #ffffff;
+      font-size: 0.75rem;
+      padding: 6px 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+
+    .clear-btn:hover {
+      background: rgba(255, 255, 255, 0.35);
+    }
+
+    /* QUICK SUGGESTION CHIPS (Horizontal Scrollable) */
+    .chips-section {
+      background: #f8fafc;
+      padding: 10px 14px;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      white-space: nowrap;
+      scrollbar-width: none; /* Firefox */
+    }
+
+    .chips-section::-webkit-scrollbar {
+      display: none; /* Chrome & Safari */
+    }
+
+    .chip {
+      background: #ffffff;
+      color: #4338ca;
+      border: 1px solid #c7d2fe;
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .chip:hover {
+      background: #4f46e5;
+      color: #ffffff;
+      border-color: #4f46e5;
+      transform: translateY(-1px);
+    }
+
+    /* CHAT MESSAGES AREA */
+    .chat-body {
+      flex: 1;
+      padding: 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      background: #fbfcfe;
+    }
+
+    /* MESSAGE BUBBLES */
+    .message-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      animation: slideUp 0.25s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .message-row.user {
+      justify-content: flex-end;
+    }
+
+    .message-row.bot {
+      justify-content: flex-start;
+    }
+
+    .mini-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      background: #e0e7ff;
+      flex-shrink: 0;
+      margin-bottom: 2px;
+    }
+
+    .bubble {
+      max-width: 82%;
+      padding: 12px 16px;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      word-wrap: break-word;
+      border-radius: 18px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .user .bubble {
+      background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+      color: #ffffff;
+      border-bottom-right-radius: 4px;
+    }
+
+    .bot .bubble {
+      background: #ffffff;
+      color: #1e293b;
+      border: 1px solid #e2e8f0;
+      border-bottom-left-radius: 4px;
+    }
+
+    .bot .bubble strong {
+      color: #312e81;
+    }
+
+    .bot .bubble ul, .bot .bubble ol {
+      margin-top: 6px;
+      margin-left: 20px;
+    }
+
+    .bot .bubble li {
+      margin-bottom: 4px;
+    }
+
+    .bot .bubble code {
+      background: #eef2ff;
+      color: #4338ca;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.85em;
+    }
+
+    /* TYPING INDICATOR */
+    .typing-indicator {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 10px 14px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      border-bottom-left-radius: 4px;
+      width: fit-content;
+    }
+
+    .typing-dot {
+      width: 6px;
+      height: 6px;
+      background: #94a3b8;
+      border-radius: 50%;
+      animation: pulse 1.2s infinite ease-in-out;
+    }
+
+    .typing-dot:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .typing-dot:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(0.8);
+        opacity: 0.4;
+      }
+      50% {
+        transform: scale(1.3);
+        opacity: 1;
+      }
+    }
+
+    /* CHAT INPUT AREA */
+    .chat-footer {
+      padding: 12px 16px;
+      background: #ffffff;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .chat-form {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .chat-input {
+      flex: 1;
+      padding: 12px 18px;
+      font-size: 0.92rem;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 25px;
+      outline: none;
+      transition: all 0.2s;
+      background: #f8fafc;
+    }
+
+    .chat-input:focus {
+      border-color: #4f46e5;
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+    }
+
+    .send-btn {
+      background: #4f46e5;
+      color: #ffffff;
+      border: none;
+      padding: 12px 22px;
+      border-radius: 25px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .send-btn:hover {
+      background: #4338ca;
+      box-shadow: 0 4px 10px rgba(79, 70, 229, 0.25);
+    }
+
+    .send-btn:active {
+      transform: scale(0.96);
+    }
+
+    /* RESPONSIVE DESIGN (Mobile, Tablet, Desktop) */
+    @media (max-width: 600px) {
+      body {
+        padding: 0;
+        background: #ffffff;
+      }
+
+      .chat-card {
+        height: 100vh;
+        max-height: 100vh;
+        border-radius: 0;
+        border: none;
+        box-shadow: none;
+      }
+
+      .chat-header {
+        border-radius: 0;
+        padding: 14px 16px;
+      }
+
+      .bubble {
+        max-width: 88%;
+        font-size: 0.88rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===================================================================
+       2. HTML STRUCTURE (Semantic & Accessible)
+       =================================================================== -->
+  <div class="chat-card">
+
+    <!-- Top Header Bar -->
+    <header class="chat-header">
+      <div class="header-profile">
+        <div class="bot-avatar">🤖</div>
+        <div class="header-text">
+          <h1>Campus Buddy</h1>
+          <div class="header-status">
+            <span class="status-dot"></span> Online • Student Career & Tech Guide
+          </div>
+        </div>
+      </div>
+      <button class="clear-btn" id="clearBtn" title="Reset conversation">Reset</button>
+    </header>
+
+    <!-- Quick Clickable Suggestion Chips -->
+    <nav class="chips-section" aria-label="Suggested questions">
+      <button class="chip" onclick="handleChipClick('What is a hackathon and how do I participate?')">🏆 Hackathons</button>
+      <button class="chip" onclick="handleChipClick('What is GitHub and how do I create a repository?')">🐙 GitHub & Repos</button>
+      <button class="chip" onclick="handleChipClick('Explain HTML basics')">🌐 HTML Basics</button>
+      <button class="chip" onclick="handleChipClick('What is CSS styling?')">🎨 CSS Styling</button>
+      <button class="chip" onclick="handleChipClick('What is JavaScript?')">⚡ JavaScript</button>
+      <button class="chip" onclick="handleChipClick('Suggest beginner college project ideas')">💡 Project Ideas</button>
+    </nav>
+
+    <!-- Chat Messages Scroll Area -->
+    <main class="chat-body" id="chatBody" role="log" aria-live="polite">
+      <!-- Welcome Message from Campus Buddy -->
+      <div class="message-row bot">
+        <div class="mini-avatar">🤖</div>
+        <div class="bubble">
+          👋 <strong>Welcome to Campus Buddy!</strong>
+          <br><br>
+          I am your friendly college coding assistant. I can help first-year students master web technologies, participate in hackathons, set up GitHub, and build awesome college projects.
+          <br><br>
+          Type any question below or click the buttons above to get started!
+        </div>
+      </div>
+    </main>
+
+    <!-- Chat Input Form -->
+    <footer class="chat-footer">
+      <form class="chat-form" id="chatForm">
+        <input 
+          type="text" 
+          id="userInput" 
+          class="chat-input" 
+          placeholder="Ask about Hackathons, GitHub, HTML, CSS, JavaScript..." 
+          autocomplete="off" 
+          aria-label="Your message"
+        />
+        <button type="submit" class="send-btn" id="sendBtn">
+          Send <span>➤</span>
+        </button>
+      </form>
+    </footer>
+
+  </div>
+
+  <!-- ===================================================================
+       3. JAVASCRIPT LOGIC (Vanilla JS with Clear Comments)
+       =================================================================== -->
+  <script>
+    // Grab references to key DOM elements
+    const chatForm = document.getElementById('chatForm');
+    const userInput = document.getElementById('userInput');
+    const chatBody = document.getElementById('chatBody');
+    const clearBtn = document.getElementById('clearBtn');
+    const sendBtn = document.getElementById('sendBtn');
+
+    /**
+     * getBotResponse(userText)
+     * -------------------------------------------------------------
+     * Analyzes the user's input string using keyword matching
+     * (case-insensitive) and returns a formatted HTML answer.
+     * Covers:
+     *  1. Hackathons & participation
+     *  2. GitHub & creating repositories
+     *  3. HTML basics
+     *  4. CSS styling
+     *  5. JavaScript fundamentals
+     *  6. College mini-project ideas
+     *  7. Greetings & help
+     *  8. Default friendly fallback
+     */
+    function getBotResponse(userText) {
+      // Convert user input to lowercase and trim extra spaces
+      const text = userText.toLowerCase().trim();
+
+      // 1. HACKATHONS & PARTICIPATION
+      if (text.includes('hackathon') || text.includes('hack') || text.includes('participate')) {
+        return `
+          🏆 <strong>Hackathons & How to Participate:</strong>
+          <br><br>
+          A <strong>hackathon</strong> is an invention marathon (usually 24 to 48 hours) where students collaborate in teams to build a software or hardware solution to a problem.
+          <br><br>
+          <strong>How to participate as a beginner:</strong>
+          <ol>
+            <li><strong>Find an event:</strong> Check websites like <em>Devpost</em>, <em>Unstop</em>, or <em>MLH (Major League Hacking)</em>.</li>
+            <li><strong>Form a team:</strong> Team up with 2 to 4 classmates (mix coders, designers, and pitch presenters).</li>
+            <li><strong>Pick a problem statement:</strong> Choose a simple, practical real-world problem (e.g. campus safety, student notes sharing).</li>
+            <li><strong>Build a prototype:</strong> Focus on creating a working MVP (Minimum Viable Product).</li>
+            <li><strong>Pitch to judges:</strong> Explain what problem your project solves and show a live demo.</li>
+          </ol>
+          <em>Tip: Even if you don't win, you gain invaluable hands-on learning, networking, and resume projects!</em>
+        `;
+      }
+
+      // 2. GITHUB & CREATING A REPOSITORY
+      if (text.includes('github') || text.includes('git') || text.includes('repository') || text.includes('repo')) {
+        return `
+          🐙 <strong>GitHub & Creating a Repository:</strong>
+          <br><br>
+          <strong>Git</strong> is a version control system that tracks your code history. <strong>GitHub</strong> is a cloud platform where developers store, share, and collaborate on Git repositories.
+          <br><br>
+          <strong>How to create a new repository on GitHub:</strong>
+          <ol>
+            <li>Log in to <a href="https://github.com" target="_blank" rel="noopener">github.com</a>.</li>
+            <li>Click the <strong>+</strong> (plus) icon in the top-right corner and select <strong>New repository</strong>.</li>
+            <li>Give your repository a meaningful name (e.g., <code>campus-buddy</code>).</li>
+            <li>Choose <strong>Public</strong> (so recruiters and teachers can see it) or <strong>Private</strong>.</li>
+            <li>Check <strong>Add a README file</strong> (explains what your project does).</li>
+            <li>Click the green <strong>Create repository</strong> button.</li>
+          </ol>
+          <em>Now you can upload files directly or use Git commands (<code>git clone</code>, <code>git add .</code>, <code>git commit</code>, <code>git push</code>) to sync your code!</em>
+        `;
+      }
+
+      // 3. HTML BASICS
+      if (text.includes('html') || text.includes('markup') || text.includes('tag')) {
+        return `
+          🌐 <strong>HTML Basics (HyperText Markup Language):</strong>
+          <br><br>
+          HTML is the <strong>skeleton</strong> of every website. It defines the structure and content using tags.
+          <br><br>
+          <strong>Key building blocks:</strong>
+          <ul>
+            <li><code>&lt;!DOCTYPE html&gt;</code>: Tells the browser this document is HTML5.</li>
+            <li><code>&lt;html&gt;</code>: The root element of an HTML document.</li>
+            <li><code>&lt;head&gt;</code>: Contains metadata, title, and stylesheets.</li>
+            <li><code>&lt;body&gt;</code>: Holds all visible content (text, images, buttons).</li>
+            <li><code>&lt;h1&gt; to &lt;h6&gt;</code>: Headings of varying importance.</li>
+            <li><code>&lt;p&gt;</code>: Paragraphs of text.</li>
+            <li><code>&lt;a href="..."&gt;</code>: Hyperlinks to other pages.</li>
+            <li><code>&lt;button&gt;</code>: Clickable user action button.</li>
+          </ul>
+        `;
+      }
+
+      // 4. CSS STYLING
+      if (text.includes('css') || text.includes('style') || text.includes('styling') || text.includes('color')) {
+        return `
+          🎨 <strong>CSS Styling (Cascading Style Sheets):</strong>
+          <br><br>
+          CSS is the <strong>skin and wardrobe</strong> of the web! It controls visual appearance, colors, layouts, and animations.
+          <br><br>
+          <strong>Essential CSS Concepts:</strong>
+          <ul>
+            <li><strong>Selectors:</strong> Target HTML elements (e.g., <code>h1</code>, <code>.button-class</code>, <code>#my-id</code>).</li>
+            <li><strong>Colors & Typography:</strong> <code>color: #4f46e5;</code>, <code>font-size: 16px;</code>.</li>
+            <li><strong>Box Model:</strong> Content ➔ Padding ➔ Border ➔ Margin.</li>
+            <li><strong>Flexbox:</strong> <code>display: flex;</code> easily aligns elements in rows or columns.</li>
+            <li><strong>Responsive Design:</strong> <code>@media (max-width: 600px)</code> adjusts styles for smartphones.</li>
+          </ul>
+        `;
+      }
+
+      // 5. JAVASCRIPT FUNDAMENTALS
+      if (text.includes('javascript') || text.includes('js') || text.includes('script')) {
+        return `
+          ⚡ <strong>JavaScript Fundamentals:</strong>
+          <br><br>
+          JavaScript is the <strong>brain and nervous system</strong> of the web. It makes web pages interactive, dynamic, and responsive to user actions.
+          <br><br>
+          <strong>Core JavaScript concepts for beginners:</strong>
+          <ul>
+            <li><strong>Variables:</strong> Store data using <code>let</code> (changeable) or <code>const</code> (fixed value).</li>
+            <li><strong>Functions:</strong> Reusable blocks of code (e.g., <code>function greet(name) { ... }</code>).</li>
+            <li><strong>DOM Manipulation:</strong> Select and update HTML elements with <code>document.getElementById()</code>.</li>
+            <li><strong>Event Listeners:</strong> React to clicks, keypresses, or form submissions using <code>.addEventListener()</code>.</li>
+            <li><strong>Conditionals:</strong> Make decisions using <code>if / else</code> statements.</li>
+          </ul>
+        `;
+      }
+
+      // 6. COLLEGE MINI-PROJECT IDEAS
+      if (text.includes('project') || text.includes('mini-project') || text.includes('idea') || text.includes('portfolio')) {
+        return `
+          💡 <strong>Top Beginner College Mini-Project Ideas:</strong>
+          <br><br>
+          Stand out in your first year by building these real-world projects:
+          <ol>
+            <li><strong>Personal Developer Portfolio:</strong> Showcase your bio, skills, college projects, and GitHub links (HTML + CSS).</li>
+            <li><strong>Student Task & Assignment Planner:</strong> A clean to-do app with add, delete, and completion checkboxes (HTML + CSS + JS).</li>
+            <li><strong>Interactive Campus Quiz App:</strong> Multiple-choice quiz with a countdown timer, instant feedback, and final score (HTML + CSS + JS).</li>
+            <li><strong>College GPA / CGPA Calculator:</strong> Input subject credits and grades to calculate semester GPA accurately.</li>
+            <li><strong>Campus Event & Club Noticeboard:</strong> A responsive page listing upcoming college workshops and hackathons.</li>
+          </ol>
+          <em>Host your finished project for free on <strong>GitHub Pages</strong> to share on your resume and LinkedIn!</em>
+        `;
+      }
+
+      // 7. GREETINGS
+      if (text.includes('hello') || text.includes('hi') || text.includes('hey') || text.includes('good morning') || text.includes('good afternoon') || text.includes('good evening')) {
+        return `
+          👋 Hello! Great to see you. I am <strong>Campus Buddy</strong>, here to help you excel in college and coding.
+          <br><br>
+          Ask me about <strong>Hackathons</strong>, <strong>GitHub</strong>, <strong>HTML</strong>, <strong>CSS</strong>, <strong>JavaScript</strong>, or <strong>Mini-Projects</strong>!
+        `;
+      }
+
+      // 8. GRATITUDE & POLITE CHAT
+      if (text.includes('thank') || text.includes('thanks') || text.includes('awesome') || text.includes('cool') || text.includes('great')) {
+        return `
+          😊 You're very welcome! Keep learning, building projects, and exploring tech. Let me know if you have any other questions!
+        `;
+      }
+
+      // 9. DEFAULT HELPFUL FALLBACK FOR UNKNOWN QUESTIONS
+      return `
+        🤖 <strong>I'm not quite sure about that yet!</strong>
+        <br><br>
+        I specialize in college tech fundamentals. Try asking about:
+        <ul>
+          <li>🏆 <em>"What is a hackathon and how do I participate?"</em></li>
+          <li>🐙 <em>"How do I create a GitHub repository?"</em></li>
+          <li>🌐 <em>"Explain HTML basics"</em></li>
+          <li>🎨 <em>"What is CSS styling?"</em></li>
+          <li>⚡ <em>"What are JavaScript fundamentals?"</em></li>
+          <li>💡 <em>"Suggest college mini-project ideas"</em></li>
+        </ul>
+        You can also click any of the shortcut buttons at the top!
+      `;
+    }
+
+    /**
+     * addMessage(content, sender)
+     * -------------------------------------------------------------
+     * Appends a message bubble (user or bot) to the chat area
+     * and automatically scrolls to the newest message.
+     */
+    function addMessage(content, sender) {
+      const messageRow = document.createElement('div');
+      messageRow.classList.add('message-row', sender);
+
+      const avatar = document.createElement('div');
+      avatar.classList.add('mini-avatar');
+      avatar.textContent = sender === 'user' ? '🎓' : '🤖';
+
+      const bubble = document.createElement('div');
+      bubble.classList.add('bubble');
+      bubble.innerHTML = content;
+
+      if (sender === 'user') {
+        messageRow.appendChild(bubble);
+        messageRow.appendChild(avatar);
+      } else {
+        messageRow.appendChild(avatar);
+        messageRow.appendChild(bubble);
+      }
+
+      chatBody.appendChild(messageRow);
+      scrollToBottom();
+    }
+
+    /**
+     * showTypingIndicator() & removeTypingIndicator()
+     * -------------------------------------------------------------
+     * Shows three animated dots to simulate the bot "thinking"
+     * for a realistic, engaging chat experience.
+     */
+    function showTypingIndicator() {
+      const indicatorRow = document.createElement('div');
+      indicatorRow.classList.add('message-row', 'bot');
+      indicatorRow.id = 'typingIndicator';
+
+      const avatar = document.createElement('div');
+      avatar.classList.add('mini-avatar');
+      avatar.textContent = '🤖';
+
+      const typingDiv = document.createElement('div');
+      typingDiv.classList.add('typing-indicator');
+      typingDiv.innerHTML = `
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
+      `;
+
+      indicatorRow.appendChild(avatar);
+      indicatorRow.appendChild(typingDiv);
+      chatBody.appendChild(indicatorRow);
+      scrollToBottom();
+    }
+
+    function removeTypingIndicator() {
+      const indicator = document.getElementById('typingIndicator');
+      if (indicator) {
+        indicator.remove();
+      }
+    }
+
+    /**
+     * scrollToBottom()
+     * -------------------------------------------------------------
+     * Automatically scrolls the chat view to the newest message.
+     */
+    function scrollToBottom() {
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    /**
+     * escapeHtml(text)
+     * -------------------------------------------------------------
+     * Sanitizes user input so that students cannot accidentally
+     * or maliciously break page formatting (prevents XSS).
+     */
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.innerText = text;
+      return div.innerHTML;
+    }
+
+    /**
+     * sendMessage()
+     * -------------------------------------------------------------
+     * Handles grabbing the text from input, displaying it as a
+     * user bubble, and triggering the bot reply with a slight delay.
+     */
+    function sendMessage(textToSend) {
+      const messageText = (textToSend !== undefined ? textToSend : userInput.value).trim();
+
+      // Rule: Ignore completely empty or whitespace-only messages
+      if (messageText === '') return;
+
+      // 1. Display user message safely
+      addMessage(escapeHtml(messageText), 'user');
+
+      // Clear input field and re-focus
+      userInput.value = '';
+      userInput.focus();
+
+      // Disable send button temporarily while bot is answering
+      sendBtn.disabled = true;
+
+      // 2. Show typing indicator
+      showTypingIndicator();
+
+      // 3. Simulate realistic thought delay (350ms)
+      setTimeout(function () {
+        removeTypingIndicator();
+        const botReply = getBotResponse(messageText);
+        addMessage(botReply, 'bot');
+        sendBtn.disabled = false;
+      }, 350);
+    }
+
+    /**
+     * handleChipClick(questionText)
+     * -------------------------------------------------------------
+     * Called when a student clicks one of the quick suggestion chips.
+     */
+    function handleChipClick(questionText) {
+      sendMessage(questionText);
+    }
+
+    /**
+     * EVENT LISTENERS
+     * -------------------------------------------------------------
+     */
+
+    // 1. Form submit listener (handles clicking Send button OR pressing Enter key)
+    chatForm.addEventListener('submit', function (event) {
+      event.preventDefault(); // Prevents page from reloading
+      sendMessage();
+    });
+
+    // 2. Clear / Reset conversation listener
+    clearBtn.addEventListener('click', function () {
+      chatBody.innerHTML = `
+        <div class="message-row bot">
+          <div class="mini-avatar">🤖</div>
+          <div class="bubble">
+            👋 <strong>Conversation reset!</strong> What tech topic would you like to explore next?
+          </div>
+        </div>
+      `;
+    });
+  </script>
+</body>
+</html>
